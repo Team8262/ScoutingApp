@@ -2,15 +2,18 @@ import question_list from './question_list.js';
 import ShortAnswer from './question_types/short_answer.js';
 import MultipleChoice from './question_types/multiple_choice.js';
 import Checkboxes from './question_types/checkboxes.js';
+import FreeSelection from './question_types/free_selection.js';
 import { Component } from 'react';
 
 import { db } from './firebase';
 import { collection, addDoc } from "firebase/firestore";
 
+import { Values } from './values';
+
 
 async function uploadData(data){
-  const docRef = await addDoc(collection(db, "scouting"), data);
-  console.log("Document written with ID: ", docRef.id);
+  await addDoc(collection(db, Values.get('event')), data);
+  console.log("Data Uploaded: ", data);
 }
 
 function handleSubmit(){
@@ -18,6 +21,15 @@ function handleSubmit(){
   var checkboxes = document.getElementsByClassName("checkboxes");
   var multiplechoice = document.getElementsByClassName("multiplechoice");
   var shortanswer = document.getElementsByClassName("shortanswer");
+  var free_selection = document.getElementsByClassName("freeselection");
+
+  Array.from(free_selection).forEach((element) => {
+    var question = element.getElementsByTagName("label")[0].innerHTML;
+    var options = element.getElementsByTagName("input")[0].value;
+    var answers = [];
+    answers.push(options);
+    data[element.id] = answers;
+  });
   
   Array.from(checkboxes).forEach((element) => {
     var question = element.getElementsByTagName("label")[0].innerHTML;
@@ -29,7 +41,7 @@ function handleSubmit(){
         answers.push(option.textContent);
       }
     });
-    data[question] = answers;
+    data[element.id] = answers;
   });
   
   Array.from(multiplechoice).forEach((element) => {
@@ -41,7 +53,7 @@ function handleSubmit(){
         answers.push(option.value);
       }
     });
-    data[question] = answers;
+    data[element.id] = answers;
   });
   
   Array.from(shortanswer).forEach((element) => {
@@ -49,7 +61,7 @@ function handleSubmit(){
     var options = element.getElementsByTagName("input")[0].value;
     var answers = [];
     answers.push(options);
-    data[question] = answers;
+    data[element.id] = answers;
   });
   
       uploadData(data);
@@ -59,18 +71,19 @@ function handleSubmit(){
   function handleEvents(mm) {
     switch(mm.type){
         case "short_answer":
-            return <ShortAnswer question={mm.question} />;
+            return <ShortAnswer question={mm.question} label={mm.label} />;
         case "multiple_choice":
-            return <MultipleChoice question={mm.question} options={mm.options} />;
+            return <MultipleChoice question={mm.question} label={mm.label} options={mm.options} />;
         case "checkboxes":
-            return <Checkboxes question={mm.question} options={mm.options} />;
+            return <Checkboxes question={mm.question} label={mm.label} options={mm.options} />;
+        case "free_selection":
+            return <FreeSelection question={mm.question} label={mm.label} options={mm.options} />;
         default:
             return <div>ERROR</div>;
     }
   }
 
 class QuestionsScreen extends Component{
-
     render(){
         return (
           <div>

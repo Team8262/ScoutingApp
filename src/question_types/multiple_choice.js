@@ -1,6 +1,6 @@
 export default function MultipleChoice(props){
     return(
-        <div class="multiplechoice">
+        <div class="multiplechoice" id={props.label}>
             <label>{props.question}</label>
             <select>
                 {props.options.map((option) => <option value={option}>{option}</option>)}
